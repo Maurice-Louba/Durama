@@ -1,0 +1,10 @@
+# Ignorer l'environnement virtuel
+env/
+
+# Ignorer les fichiers temporaires Python
+__pycache__/
+*.pyc
+
+# Ignorer les fichiers de logs
+*.log
+Asebook/
