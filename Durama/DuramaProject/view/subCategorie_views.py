@@ -7,7 +7,7 @@ from ..models import SubCategorie, Categorie
 from ..serializer import SousCategorieSerialized
 
 
-# ➤ 1. Liste de toutes les sous-catégories
+#  1. Liste de toutes les sous-catégories
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def liste_souscategories(request):
@@ -16,7 +16,7 @@ def liste_souscategories(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# ➤ 2. Récupérer les sous-catégories d’une catégorie donnée
+#  2. Récupérer les sous-catégories d’une catégorie donnée
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def souscategories_par_categorie(request, categorie_id):
@@ -30,7 +30,7 @@ def souscategories_par_categorie(request, categorie_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# ➤ 3. Détails d’une sous-catégorie
+#  3. Détails d’une sous-catégorie
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def detail_souscategorie(request, souscategorie_id):
@@ -43,7 +43,7 @@ def detail_souscategorie(request, souscategorie_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# ➤ 4. Créer une nouvelle sous-catégorie
+#  4. Créer une nouvelle sous-catégorie
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def creer_souscategorie(request, categorie_id):
@@ -60,7 +60,7 @@ def creer_souscategorie(request, categorie_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ➤ 5. Modifier une sous-catégorie
+# 5. Modifier une sous-catégorie
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def modifier_souscategorie(request, souscategorie_id):
@@ -77,7 +77,7 @@ def modifier_souscategorie(request, souscategorie_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# ➤ 6. Supprimer une sous-catégorie
+# 6. Supprimer une sous-catégorie
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def supprimer_souscategorie(request, souscategorie_id):
