@@ -42,4 +42,16 @@ def SupprimerCategorie(request,categorie_id):
         return Response({'error':'cette categorie existe pas'},status=status.HTTP_404_NOT_FOUND)
     categorie.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
-
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def TousLesCategories(request):
+    categorie=Categorie.objects.all()
+    categorieSeriali=CategorieSerialized(categorie,many=True)
+    return Response(categorieSeriali.data)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def DetailCategorie(request,pk):
+    try:
+        categories = Categorie.objects.all(pk=pk).order_by('nom')
+    except Categorie.DoesNotExist:
+        return Response({'error':'categorie non trouvé'},status=status.HTTP_404_NOT_FOUND)

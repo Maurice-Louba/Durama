@@ -140,13 +140,20 @@ class ProduitVariableSerialized(serializers.ModelSerializer):
     produit=ProduitSerialized(read_only=True)
     class Meta:
         model=ProduitVariable
-        fields=['produit','prix_fournisseur','prix_vente','prix_promo','quantite','created_at','updeated_at']
+        fields=['produit','prix_fournisseur','prix_vente','prix_promo','quantite','created_at','updated_at']
 
-class ProduitVariableImage(serializers.ModelSerializer):
-    produit=ProduitVariableSerialized(read_only=True)
+class ProduitVariableImageSerialized(serializers.ModelSerializer):
+    produit_variable = ProduitVariableSerialized(read_only=True)
+
     class Meta:
-        model=ProduitVariableImage
-        fields=['produit_variable','id','image','created_at','updated_at']
+        model = ProduitVariableImage
+        fields = [
+            "id",
+            "produit_variable",
+            "image",
+            "created_at",
+            "updated_at"
+        ]
 
 class AvisProduitSerialized(serializers.ModelSerializer):
     produit=ProduitSerialized(read_only=True)
@@ -154,4 +161,95 @@ class AvisProduitSerialized(serializers.ModelSerializer):
     class Meta:
         models=AvisProduit
         fields=['id','produit','user','texte','note','created_at','updated_at']
-    
+    def create(self, validated_data):
+        user=self.context['request'].user
+        return AvisProduit.objects.create(user=user,**validated_data)
+
+class ProduitVariableAttributSerialized(serializers.ModelSerializer):
+    produit_variable = ProduitVariableSerialized(read_only=True)
+    attribut = AttributSerialized(read_only=True)
+
+    # Pour écrire (création/modif), on utilise juste les IDs
+    produit_variable_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProduitVariable.objects.all(),
+        source="produit_variable",
+        write_only=True
+    )
+    attribut_id = serializers.PrimaryKeyRelatedField(
+        queryset=Attribut.objects.all(),
+        source="attribut",
+        write_only=True
+    )
+
+    class Meta:
+        model = ProduitVariableAttribut
+        fields = [
+            "id",
+            "produit_variable",
+            "attribut",
+            "produit_variable_id",
+            "attribut_id"
+        ]
+
+class PanierSerialized(serializers.ModelSerializer):
+    user=UserSerialized(read_only=True)
+    class Meta:
+        model=Panier
+        fields=['id','user','created_at','updated_at']
+    def create(self, validated_data):
+        user=self.context['request'].user
+        return Panier.objects.create(user=user,**validated_data)
+class PanierItemSerialized(serializers.ModelSerializer):
+    panier=PanierSerialized(read_only=True)
+    produit=ProduitSerialized(read_only=True)
+    produit_variable=ProduitVariableSerialized(read_only=True)
+    attribut_valeur=AttributSerialized(read_only=True)
+    class Meta:
+        model=ContenuPanier
+        fields=['id','panier','produit','produit_varable','attribut_valeur','quantite','is_variable','created_at','updated_at']
+class CommandeSerialized(serializers.ModelSerializer):
+    user = UserSerialized(read_only=True)
+    panier = PanierSerialized(read_only=True)
+
+    # Pour la création, on autorise juste l’ID du panier
+    panier_id = serializers.PrimaryKeyRelatedField(
+        queryset=Panier.objects.all(),
+        source="panier",
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Commande
+        fields = [
+            "id",
+            "user",
+            "panier",
+            "panier_id",
+            "numero",
+            "statut",
+            "total_produits",
+            "frais_livraison",
+            "montant_total",
+            "adresse_livraison",
+            "notes",
+            "created_at",
+            "updated_at"
+        ]
+        read_only_fields = ["total_produits", "montant_total", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        commande = Commande.objects.create(user=user, **validated_data)
+        
+        commande.calculer_totaux()
+        return commande
+class CommandeItemSerialized(serializers.ModelSerializer):
+    commande=CommandeSerialized(read_only=True)
+    produit=ProduitSerialized(read_only=True)
+    produit_variable=ProduitVariableSerialized(read_only=True)
+    class Meta:
+        model=CommandeItem
+        fields=['commande','produit','produit_variable','quantite','prix_unitaire']
+        

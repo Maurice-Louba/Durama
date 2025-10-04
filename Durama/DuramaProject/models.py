@@ -314,6 +314,7 @@ class AvisProduit(models.Model):
 
 class Panier(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE,related_name="utilisateur_detenteur_du_panier",help_text="Utilisateur propriétaire du panier")
+    actif = models.BooleanField(default=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -334,7 +335,7 @@ class ContenuPanier(models.Model):
 from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
+import uuid
 
 class Commande(models.Model):
     STATUS_CHOICES = [
@@ -346,8 +347,8 @@ class Commande(models.Model):
         ('annulee', 'Annulée'),
     ]
 
-    acheteur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="commandes")
-    vendeur = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ventes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="commandes")
+    
     panier = models.ForeignKey(Panier, on_delete=models.SET_NULL, blank=True, null=True)
 
     numero = models.CharField(max_length=50, unique=True, help_text="Numéro unique de la commande")
@@ -368,6 +369,19 @@ class Commande(models.Model):
         self.total_produits = total
         self.montant_total = total + self.frais_livraison
         self.save()
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.numero:
+            # Exemple simple avec UUID
+            self.numero = str(uuid.uuid4()).split('-')[0].upper()  # CMD unique court
+        if not self.adresse_livraison:
+            # Si l'utilisateur a une adresse par défaut, on la récupère automatiquement
+            try:
+                self.adresse_livraison = self.user.adresses.get(is_default=True).adresse
+            except:
+                self.adresse_livraison = ""
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Commande {self.numero} - {self.acheteur.username} ({self.statut})"
@@ -424,3 +438,104 @@ class Livraison(models.Model):
 
     def __str__(self):
         return f"Livraison de {self.commande.numero} - {self.statut}"
+
+
+class Addresse(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    address = models.CharField(max_length=255)
+    ville = models.CharField(max_length=255)
+    pays = models.CharField(max_length=255)
+    telephone = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    location_url = models.URLField(null=True, blank=True)
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+class PromoCode(models.Model):
+    code = models.CharField(max_length=50, unique=True, blank=False, null=False, help_text="Code promotionnel unique à utiliser pour bénéficier de la remise.")
+    discount_type = models.CharField(max_length=10, choices=[('fixed', 'Fixed'), ('percent', 'Percent')], default='percent', help_text="Type de remise : Fixe (montant) ou Pourcentage.")
+    discount_value = models.DecimalField(max_digits=10, default=2, decimal_places=2, validators=[MinValueValidator(0)], help_text="Montant de la remise. Exemple : 10.00 pour une réduction de 10 € ou 10.00 pour une remise de 10 %.")
+    max_discount = models.DecimalField(max_digits=10, default=10000, decimal_places=2, blank=True, null=True, help_text="Limite pour une remise en pourcentage. Exemple : Si la remise est de 20 %, la réduction totale ne dépassera pas ce montant.")
+    minimum_order_amount = models.DecimalField(max_digits=10, default=10000, decimal_places=2, blank=True, null=True, help_text="Montant minimum de commande pour appliquer ce code promo.")
+    
+    # Gestion des utilisations
+    max_uses = models.PositiveIntegerField(blank=True, null=True, help_text="Nombre maximum d'utilisations du code promo. Laisser vide pour un usage illimité.")
+    current_uses = models.PositiveIntegerField(default=0, db_default=0, help_text="Nombre actuel d'utilisations du code promo.")
+    max_uses_per_user = models.PositiveIntegerField(blank=True, null=True, help_text="Nombre maximum d'utilisations par utilisateur.")
+    
+    # Ciblage
+    eligible_users = models.ManyToManyField(User, blank=True, help_text="Utilisateurs éligibles pour ce code promo. Laisser vide pour tous les utilisateurs.")
+    target_products = models.ManyToManyField(Produit, blank=True, help_text="Produits ciblés par ce code promo.")
+    target_categories = models.ManyToManyField(Categorie, blank=True, help_text="Catégories ciblées par ce code promo.")
+    
+    is_active = models.BooleanField(default=True, help_text="Indique si le code promo est actuellement actif ou désactivé.")
+    start_date = models.DateTimeField(help_text="Date et heure de début de validité du code promo.")
+    end_date = models.DateTimeField(help_text="Date et heure de fin de validité du code promo.")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Date et heure de création du code promo.")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Date et heure de la dernière mise à jour du code promo.")
+
+    def clean(self):
+        if self.discount_type == 'percent' and (self.discount_value < 0 or self.discount_value > 100):
+            raise ValidationError({'discount_value': 'La valeur du pourcentage doit être entre 0 et 100.'})
+        if self.start_date >= self.end_date:
+            raise ValidationError({'start_date': 'La date de début doit être avant la date de fin.'})
+        if self.max_uses and self.current_uses > self.max_uses:
+            raise ValidationError({'current_uses': 'Le nombre d\'utilisations actuelles ne peut pas dépasser le maximum autorisé.'})
+
+    def is_valid(self):
+        from django.utils.timezone import now
+        return (
+            self.is_active and 
+            self.start_date <= now() <= self.end_date and
+            (self.max_uses is None or self.current_uses < self.max_uses)
+        )
+
+    def can_be_used_by_user(self, user):
+        """Vérifie si un utilisateur peut utiliser ce code promo"""
+        if not self.is_valid():
+            return False
+        
+        # Vérifier si l'utilisateur est éligible
+        if self.eligible_users.exists() and user not in self.eligible_users.all():
+            return False
+        
+        # Vérifier le nombre d'utilisations par utilisateur
+        if self.max_uses_per_user:
+            user_uses = PromoCodeUsage.objects.filter(promo_code=self, user=user).count()
+            if user_uses >= self.max_uses_per_user:
+                return False
+
+        return True
+
+    def get_usage_stats(self):
+        """Retourne les statistiques d'utilisation"""
+        return {
+            'total_uses': self.current_uses,
+            'max_uses': self.max_uses,
+            'remaining_uses': self.max_uses - self.current_uses if self.max_uses else None,
+            'usage_percentage': (self.current_uses / self.max_uses * 100) if self.max_uses else None,
+            'unique_users': PromoCodeUsage.objects.filter(promo_code=self).values('user').distinct().count()
+        }
+
+    def __str__(self):
+        return f'Code : {self.code} - Type : {self.discount_type} - Value : {self.discount_value}'
+
+class PromoCodeUsage(models.Model):
+    """Modèle pour suivre l'utilisation des codes promo"""
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name='usages')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.ForeignKey(Commande, on_delete=models.CASCADE, blank=True, null=True)
+    used_at = models.DateTimeField(auto_now_add=True)
+    discount_applied = models.DecimalField(max_digits=10, decimal_places=2, help_text="Montant de la remise appliquée")
+
+    class Meta:
+        pass
+        #unique_together = ['promo_code', 'order']  # Un code promo ne peut être utilisé qu'une fois par commande
+
+    def __str__(self):
+        return f'{self.user} - {self.promo_code.code} - {self.used_at}'

@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, EmailOTP, Categorie, SubCategorie, TypeAttribut, Attribut, Etiquette,
     Produit, ImageProduit, ProduitVariable, ProduitVariableAttribut, ProduitVariableImage,
-    AvisProduit, Panier, ContenuPanier, Commande, CommandeItem, Paiement, Livraison
+    AvisProduit, Panier, ContenuPanier, Commande, CommandeItem, Paiement, Livraison,Addresse,PromoCode,PromoCodeUsage
 )
 
 # ==============================
@@ -130,7 +130,7 @@ class CommandeItemInline(admin.TabularInline):
 
 @admin.register(Commande)
 class CommandeAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'acheteur', 'vendeur', 'statut', 'montant_total', 'created_at')
+    list_display = ('numero', 'user', 'statut', 'montant_total', 'created_at')
     search_fields = ('numero', 'acheteur__email', 'vendeur__email')
     list_filter = ('statut',)
     inlines = [CommandeItemInline]
@@ -149,3 +149,37 @@ class PaiementAdmin(admin.ModelAdmin):
 @admin.register(Livraison)
 class LivraisonAdmin(admin.ModelAdmin):
     list_display = ('commande', 'transporteur', 'numero_suivi', 'date_expedition', 'date_livraison', 'statut')
+
+
+# ==============================
+# ADRESSES
+# ==============================
+@admin.register(Addresse)
+class AddresseAdmin(admin.ModelAdmin):
+    list_display = ('user', 'address', 'ville', 'pays', 'telephone', 'is_default', 'created_at', 'updated_at')
+    search_fields = ('user__email', 'address', 'ville', 'pays', 'telephone')
+    list_filter = ('pays', 'ville', 'is_default')
+    readonly_fields = ('created_at', 'updated_at')
+
+# ==============================
+# CODES PROMO
+# ==============================
+class PromoCodeUsageInline(admin.TabularInline):
+    model = PromoCodeUsage
+    extra = 0
+    readonly_fields = ('user', 'order', 'used_at', 'discount_applied')
+    can_delete = False
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_type', 'discount_value', 'is_active', 'start_date', 'end_date', 'current_uses', 'max_uses')
+    search_fields = ('code',)
+    list_filter = ('discount_type', 'is_active', 'start_date', 'end_date')
+    inlines = [PromoCodeUsageInline]
+
+@admin.register(PromoCodeUsage)
+class PromoCodeUsageAdmin(admin.ModelAdmin):
+    list_display = ('promo_code', 'user', 'order', 'discount_applied', 'used_at')
+    search_fields = ('promo_code__code', 'user__email', 'order__numero')
+    list_filter = ('used_at', 'promo_code')
+
