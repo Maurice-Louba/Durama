@@ -187,9 +187,9 @@ class Produit(models.Model):
 
     status = models.CharField(max_length=50, choices=STATUS_RECOMMANDATION, default="publie")
 
-    categorie = models.ForeignKey("Categorie", on_delete=models.CASCADE, related_name="produits")
-    sous_categorie = models.ForeignKey("SubCategorie", blank=True, null=True, on_delete=models.CASCADE, related_name="produits")
-    etiquette = models.ForeignKey("Etiquette", on_delete=models.CASCADE, related_name="produits")
+    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, related_name="produits")
+    sous_categorie = models.ForeignKey(SubCategorie, blank=True, null=True, on_delete=models.CASCADE, related_name="produits")
+    etiquette = models.ForeignKey(Etiquette, on_delete=models.CASCADE, related_name="produits")
 
     image_principale = models.ImageField(upload_to="produits/principales/", null=True, blank=True)
 

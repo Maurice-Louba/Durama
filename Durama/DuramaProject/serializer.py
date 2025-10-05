@@ -36,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class CategorieSerialized(serializers.ModelSerializer):
     class Meta:
-        models=Categorie
+        model=Categorie
         fields='__all__'
 
 class UserSerialized(serializers.ModelSerializer):
@@ -49,7 +49,7 @@ class SousCategorieSerialized(serializers.ModelSerializer):
     categorie_principale=CategorieSerialized(read_only=True)
     class Meta:
         model=SubCategorie
-        fields=['categorie_principale','id','nom','courte_descriptions','longue_description','created_at','updated_at']
+        fields=['categorie_principale','id','nom','courte_description','longue_description','created_at','updated_at']
 
 class TypeAttributSerialized(serializers.ModelSerializer):
     class Meta:
@@ -252,4 +252,22 @@ class CommandeItemSerialized(serializers.ModelSerializer):
     class Meta:
         model=CommandeItem
         fields=['commande','produit','produit_variable','quantite','prix_unitaire']
-        
+
+class PaiementSerialized(serializers.ModelSerializer):
+    commande=CommandeSerialized(read_only=True)
+    class Meta:
+        model=Paiement
+        fields=['id','commande','method','transaction_id','montant','date_paiement']
+
+
+class LivraisonSerialized(serializers.ModelSerializer):
+    commande=CommandeSerialized(read_only=True)
+    class Meta:
+        model=Livraison
+        fields=['id','commande','transporteur','numero_suivi','date_expedition','date_livraison']
+
+class AdresseSerialized(serializers.ModelSerializer):
+    user=UserSerialized(read_only=True)
+    class Meta:
+        model=Addresse
+        fields=['id','user','adresse','ville','pays','telephone','latitude','longitude','location_url','is_default','created_at','updated_at']

@@ -46,7 +46,7 @@ def changerUnAttribut(request,pk):
         attribut=Attribut.objects.get(pk=pk)
     except Attribut.DoesNotExist:
         return Response({'error':'Attribut non trouver'},status=status.HTTP_404_NOT_FOUND)
-    data=AttributSerialized(attribut,data=request,partial=(request.method=='PATCH'))
+    data=AttributSerialized(attribut,data=request.data,partial=(request.method=='PATCH'))
     if data.is_valid():
         data.save()
         return Response(status=status.HTTP_201_CREATED)

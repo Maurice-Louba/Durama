@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from .views import RegisterView,verify_otp
-from DuramaProject.view import Panier_views,ProduitVariableImage,Etiquette_views,ProduitVariableAttribut_views,ProduitIlmage_views,ProduitVariable_views,TypeAttribut_views,subCategorie_views,Attribut_views,AvisProduit_views,categorie_views,Commande_view,Etiquette_views,PanierItem_views,Produit_views
+from DuramaProject.view import Adresse_views,Paiement_views,Livraison_views,Panier_views,ProduitVariableImage,Etiquette_views,ProduitVariableAttribut_views,ProduitIlmage_views,ProduitVariable_views,TypeAttribut_views,subCategorie_views,Attribut_views,AvisProduit_views,categorie_views,Commande_view,Etiquette_views,PanierItem_views,Produit_views
 
 
 urlpatterns = [
@@ -22,14 +22,14 @@ urlpatterns = [
     #SubCategorie
     path('tous-les-souscategorie/',subCategorie_views.liste_souscategories,name="liste_des_sous_categories"),
     path('sous-categorie-par-categorie/<int:categorie_id>/',subCategorie_views.souscategories_par_categorie,name="sous_categorie_par_categorie"),
-    path('details-sous-categorie/<int:categorie_id>/',subCategorie_views.detail_souscategorie,name="details_sous_categorie"),
+    path('details-sous-categorie/<int:souscategorie_id>/',subCategorie_views.detail_souscategorie,name="details_sous_categorie"),
     path('creer-sous-categorie/<int:categorie_id>/',subCategorie_views.creer_souscategorie,name="creer_une_sous_categorie"),
     path('modifier-sous-categorie/<int:souscategorie_id>/',subCategorie_views.modifier_souscategorie,name="modifier_sous_categorie"),
     path('supprimer-sous-categorie/<int:souscategorie_id>/',subCategorie_views.supprimer_souscategorie,name="supprimer_sous_categorie"),
     #TypeAttribut
     path('faire-type-attribut/',TypeAttribut_views.faireUnTypeAttribut,name="faire_un_type_attribut"),
     path('tous-type-attribut/',TypeAttribut_views.VoirTousTypeAttribut,name="voir_tous_les_types_attributs"),
-    path('details-attribut/<int:pk>/',TypeAttribut_views.detailUnTypeAttribut,name="details_type_attribut"),
+    path('details-typeattribut/<int:pk>/',TypeAttribut_views.detailUnTypeAttribut,name="details_type_attribut"),
     path('changer-type-attribut/<int:pk>/',TypeAttribut_views.changerTypeAttribut,name="changer_type_attribut"),
     path('supprimer-un-type-attribut/<int:pk>/',TypeAttribut_views.SupprimerUnTypeAttribut,name="supprimer_un_type_attribut"),
     #Attribut
@@ -103,6 +103,36 @@ urlpatterns = [
     path('commandes/', Commande_view.tous_les_commandes, name='tous_les_commandes'),
     path('commandes/user/<int:user_id>/', Commande_view.commandeParUser, name='commande_par_user'),
     path('commande/modifier/<int:pk>/', Commande_view.changerUneCommande, name='changer_une_commande'),
+    
+    # Livraisons
+    path('livraison/creer/<int:commande_id>/', Livraison_views.creer_livraison),
+    path('livraison/<int:livraison_id>/', Livraison_views.voir_livraison),
+    path('livraison/<int:livraison_id>/update/', Livraison_views.update_livraison),
+    path('livraison/<int:livraison_id>/delete/', Livraison_views.supprimer_livraison),
+    path('livraisons/commande/<int:commande_id>/', Livraison_views.lister_livraisons_commande),
+
+    # Paiements
+    path('paiement/creer/<int:commande_id>/', Paiement_views.creer_paiement),
+    path('paiement/<int:paiement_id>/', Paiement_views.voir_paiement),
+    path('paiement/<int:paiement_id>/update/', Paiement_views.update_paiement),
+    path('paiement/<int:paiement_id>/delete/', Paiement_views.supprimer_paiement),
+    #Livraison
+    path('creer-une-livraison/',Livraison_views.creer_livraison,name="creer_une_livraison"),
+    path('voir-livraison/<int:livraison_id>/',Livraison_views.voir_livraison,name="voir_une_livraion"),
+    path('changer-une-livraison/<int:livraison_id>/',Livraison_views.update_livraison,name="changer_une_livraison"),
+    path('supprimer-une-livraison/<int:livraison_id>/',Livraison_views.supprimer_livraison,name="supprimer_une_livraison"),
+    path('livraison-par-commande/<int:commande_id>/',Livraison_views.lister_livraisons_commande,name="livraison_par_commande"),
+    #Adresse
+    path('liste-des-adresse/', Adresse_views.liste_adresses, name='liste_adresses'),
+    path('create-adresse/', Adresse_views.creer_adresse, name='creer_adresse'),
+    path('details-adresse/<int:pk>/', Adresse_views.detail_adresse, name='detail_adresse'),
+    path('adresse/<int:pk>/update/', Adresse_views.modifier_adresse, name='modifier_adresse'),
+    path('adresse/<int:pk>/delete/', Adresse_views.supprimer_adresse, name='supprimer_adresse'),
+    path('default-adresse/', Adresse_views.adresse_par_defaut, name='adresse_par_defaut'),
+    path('set-default-default/<int:pk>/', Adresse_views.definir_adresse_par_defaut, name='definir_adresse_par_defaut'),
+
+    
+    
     
     
     
