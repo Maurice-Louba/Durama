@@ -82,3 +82,12 @@ def commandeParUser(request,user_id):
         return Response({'message':'ce utilisateur a aucune commande'},status=status.HTTP_400_BAD_REQUEST)
     commandesSeria=CommandeSerialized(commandes,many=True)
     return Response(commandesSeria.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def nombre_commande(request):
+    try:
+        nombreCommande = Commande.objects.filter(user=request.user).count()
+    except Commande.DoesNotExist:
+        return Response({'message':"utilisateur non trouver"})
+    return Response(nombreCommande)

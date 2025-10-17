@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.shortcuts import render
 from rest_framework import generics,permissions
 from ..serializer import TypeAttributSerialized
+from drf_yasg.utils import swagger_auto_schema
 from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -10,8 +11,18 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
 
+
+
+@swagger_auto_schema(
+    method='post', 
+    request_body=TypeAttributSerialized,
+    responses={
+        201: TypeAttributSerialized,
+        400: 'Bad Request'
+    }
+)
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+
 def faireUnTypeAttribut(request):
     data=TypeAttributSerialized(data=request.data)
     if data.is_valid():

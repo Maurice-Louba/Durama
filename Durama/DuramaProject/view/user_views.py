@@ -34,7 +34,7 @@ def current_user(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def deleteUser(request):
     try:
         user=User.objects.get(user=request.user)

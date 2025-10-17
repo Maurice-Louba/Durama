@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure--q8%u%q*a7#172&pftr(w!ry)@ziakqn4s8b(-okiu0yxuq@jf
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "earl-trademark-comic-pacific.trycloudflare.com",
+    "localhost", 
+    "127.0.0.1"
+]
 
 
 # Application definition
@@ -38,7 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'DuramaProject',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_yasg',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -49,6 +56,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
 ROOT_URLCONF = 'Durama.urls'
@@ -106,11 +116,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     )
     
 }
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # ton front React (Vite)
+]
 
-
+CORS_ALLOW_ALL_ORIGINS = True
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -121,7 +136,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
+import os
+ALLOWED_HOSTS = ["*"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -150,3 +166,22 @@ EMAIL_HOST_USER = "mauricelouba9@gmail.com"
 EMAIL_HOST_PASSWORD = "xdcn gxrh coah dcqb"  
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 AUTH_USER_MODEL = 'DuramaProject.User'
+
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
+MEDIA_URL = '/media/'         # URL pour accéder aux fichiers
+MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# settings.py
+SESSION_COOKIE_DOMAIN = ".trycloudflare.com"  # autorise le domaine du tunnel
+CSRF_COOKIE_DOMAIN = ".trycloudflare.com"
+CSRF_TRUSTED_ORIGINS = ["https://earl-trademark-comic-pacific.trycloudflare.com"]

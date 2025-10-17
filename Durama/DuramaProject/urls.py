@@ -4,7 +4,9 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from .views import RegisterView,verify_otp
-from DuramaProject.view import Adresse_views,Paiement_views,Livraison_views,Panier_views,ProduitVariableImage,Etiquette_views,ProduitVariableAttribut_views,ProduitIlmage_views,ProduitVariable_views,TypeAttribut_views,subCategorie_views,Attribut_views,AvisProduit_views,categorie_views,Commande_view,Etiquette_views,PanierItem_views,Produit_views
+from DuramaProject.view import Favori_views,Adresse_views,user_views,Paiement_views,Livraison_views,Panier_views,ProduitVariableImage,Etiquette_views,ProduitVariableAttribut_views,ProduitIlmage_views,ProduitVariable_views,TypeAttribut_views,subCategorie_views,Attribut_views,AvisProduit_views,categorie_views,Commande_view,Etiquette_views,PanierItem_views,Produit_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -12,13 +14,14 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # Rafraîchir le token
     path('register/', RegisterView.as_view(), name='register'),
     path("jwt/create/",TokenObtainPairView.as_view(),name="jwt-create"),
-    path('verify_otp/', verify_otp, name='verification otp'),
+    path('verify_otp/',verify_otp, name='verification otp'),
     #Categorie
     path('creer-categorie/',categorie_views.createCategorie,name="creer_une_categorie"),
     path('changer-categorie/<int:categorie_id>/',categorie_views.changeCategorie,name="changer_categorie"),
     path('supprimer-categorie/<int:categorie_id>/',categorie_views.SupprimerCategorie,name="supprimer_une_categorie"),
     path('tous-categorie/',categorie_views.TousLesCategories,name="tous_les_categories"),
     path('details-categorie/<int:pk>/',categorie_views.DetailCategorie,name="detail_une_categorie"),
+    path('categories-par-gros-categorie/<str:groCategorie>/',categorie_views.toutCategories,name="categorie_par_grosse_categorie"),
     #SubCategorie
     path('tous-les-souscategorie/',subCategorie_views.liste_souscategories,name="liste_des_sous_categories"),
     path('sous-categorie-par-categorie/<int:categorie_id>/',subCategorie_views.souscategories_par_categorie,name="sous_categorie_par_categorie"),
@@ -52,6 +55,8 @@ urlpatterns = [
     path('produits-par-categorie/<int:categorie_id>/', Produit_views.produits_par_categorie, name="produits_par_categorie"),
     path('produits-par-souscategorie/<int:souscategorie_id>/', Produit_views.produits_par_souscategorie, name="produits_par_souscategorie"),
     path('produits-par-etiquette/<int:etiquette_id>/', Produit_views.produits_par_etiquette, name="produits_par_etiquette"),
+    path('produit-par-gros-categorie/<str:gros_categorie>/',Produit_views.produitpargroscategorie,name="produit_par_grosse_categorie"),
+    path('quatres-premiers-produits/<str:gros_categorie>/',Produit_views.QuatresPremiers,name="quatre_premier_produits"),
     
     # Images de produits
     path('images/', ProduitIlmage_views.liste_images, name="liste_images"),
@@ -87,7 +92,7 @@ urlpatterns = [
     #Avis Produit
     path('tous-avis/',AvisProduit_views.tousAvis,name="tous_les_avis"),
     path('avis-par-produit/<int:produit_id>/',AvisProduit_views.AvisSurUnProduit,name="avis_sur_un_produit"),
-    path('faire-avis-sur-un-produit/',AvisProduit_views.faireAvis,name="faire_un_avis_sur_un_produit"),
+    path('faire-avis-sur-un-produit/<int:produit_id>/',AvisProduit_views.faireAvis,name="faire_un_avis_sur_un_produit"),
     path('supprimer-avis-produit/<int:produit_id>/',AvisProduit_views.deleteAvisProduit,name="supprimer_avis_produit"),
     path('details-avis-produit/<int:produit_id>/',AvisProduit_views.detailAvisSurProduit,name="details_avis_produit"),
     path('modifier-avis-produit/<int:produit_id>/',AvisProduit_views.modifierAvisProduit,name="modifier_avis_produits"),
@@ -103,6 +108,7 @@ urlpatterns = [
     path('commandes/', Commande_view.tous_les_commandes, name='tous_les_commandes'),
     path('commandes/user/<int:user_id>/', Commande_view.commandeParUser, name='commande_par_user'),
     path('commande/modifier/<int:pk>/', Commande_view.changerUneCommande, name='changer_une_commande'),
+    path('nombreCommande/',Commande_view.nombre_commande,name="nombre_de_commande_par_utilisateur"),
     
     # Livraisons
     path('livraison/creer/<int:commande_id>/', Livraison_views.creer_livraison),
@@ -130,6 +136,10 @@ urlpatterns = [
     path('adresse/<int:pk>/delete/', Adresse_views.supprimer_adresse, name='supprimer_adresse'),
     path('default-adresse/', Adresse_views.adresse_par_defaut, name='adresse_par_defaut'),
     path('set-default-default/<int:pk>/', Adresse_views.definir_adresse_par_defaut, name='definir_adresse_par_defaut'),
+    #Utilisateur
+    path('infoUser/',user_views.current_user,name="info-utilisateur"),
+    #Favori
+    path('nombreFavori/',Favori_views.nombre_de_favorie,name="nombre_de_favori_pour_un_utilisateur")
 
     
     
@@ -138,3 +148,5 @@ urlpatterns = [
     
     
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

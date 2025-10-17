@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, EmailOTP, Categorie, SubCategorie, TypeAttribut, Attribut, Etiquette,
     Produit, ImageProduit, ProduitVariable, ProduitVariableAttribut, ProduitVariableImage,
-    AvisProduit, Panier, ContenuPanier, Commande, CommandeItem, Paiement, Livraison,Addresse,PromoCode,PromoCodeUsage
+    AvisProduit, Panier, ContenuPanier, Commande, CommandeItem, Paiement, Livraison,Addresse,PromoCode,PromoCodeUsage,Favori
 )
 
 # ==============================
@@ -11,12 +11,12 @@ from .models import (
 # ==============================
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('first_name', 'last_name', 'email', 'is_active', 'is_staff', 'is_superuser')
+    list_display = ('first_name', 'last_name', 'email', 'is_active', 'is_staff','photo','is_superuser')
     ordering = ('email',)
     search_fields = ('email', 'first_name', 'last_name')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Infos personnelles', {'fields': ('first_name', 'last_name', 'phone_number', 'address', 'bio')}),
+        ('Infos personnelles', {'fields': ('first_name', 'last_name', 'photo','phone_number', 'address', 'bio')}),
         ('Statut', {'fields': ('is_active', 'is_confirmed', 'is_staff', 'is_superuser')}),
         ('Permissions', {'fields': ('groups', 'user_permissions')}),
         ('Dates importantes', {'fields': ('last_login', 'date_joined')}),
@@ -182,4 +182,8 @@ class PromoCodeUsageAdmin(admin.ModelAdmin):
     list_display = ('promo_code', 'user', 'order', 'discount_applied', 'used_at')
     search_fields = ('promo_code__code', 'user__email', 'order__numero')
     list_filter = ('used_at', 'promo_code')
+
+@admin.register(Favori)
+class FavoriAdmin(admin.ModelAdmin):
+    list_display=('produit','user','created_at','updated_at')
 

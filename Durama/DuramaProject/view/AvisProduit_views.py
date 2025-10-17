@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.response import Response
-
+from drf_yasg.utils import swagger_auto_schema 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def tousAvis(request):
@@ -27,8 +27,18 @@ def AvisSurUnProduit(request,produit_id):
     avis_produitSeria=AvisProduitSerialized(avis_produit,many=True)
     return Response(avis_produitSeria.data)
 
-@api_view(['POST'])
+
+
+@swagger_auto_schema(
+    method='post', 
+    request_body=AvisProduitSerialized,
+    responses={
+        201: AvisProduitSerialized,
+        400: 'Bad Request'
+    }
+)
 @permission_classes([IsAuthenticated])
+@api_view(['POST'])
 def faireAvis(request, produit_id):
     try:
         produit = Produit.objects.get(pk=produit_id)
@@ -49,9 +59,9 @@ def modifierAvisProduit(request,produit_id):
         produit=Produit.objects.get(produit=produit_id)
     except Produit.DoesNotExist:
         return Response({'error':'produit non trouver'},status=status.HTTP_404_NOT_FOUND)
-    serializer=AvisProduitSerialized(data=request.data,context={'request':request},partial=(request.method=='PATCH'))
+    serializer=AvisProduitSerialized(produit,data=request.data,context={'request':request},partial=(request.method=='PATCH'))
     if serializer.is_valid():
-        serializer.save(produit=produit)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

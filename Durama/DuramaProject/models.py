@@ -48,6 +48,7 @@ class User(AbstractUser):
     
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    photo=models.FileField(null=True,blank=True,default=None,upload_to="profil/")
     bio = models.TextField(blank=True, null=True)
     is_confirmed = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -78,12 +79,19 @@ class EmailOTP(models.Model):
 
 
 class Categorie(models.Model):
+    GROS_CATEGORIE=[
+        ('gros-oeuvres','Gros Oeuvres'),
+        ('second-oeuvres','Second Oeuvres'),
+        ('outillage','Outillage'),
+        ('securité','Sécurité')
+    ]
     
     nom=models.CharField(max_length=150,unique=True)
     courte_description=models.TextField(max_length=550)
     longue_description=models.TextField(max_length=1500)
     photo=models.FileField(upload_to='imageCategorie/',blank=True,null=True)
     is_parent=models.BooleanField(default=True)
+    gros_categorie=models.CharField(max_length=150,choices=GROS_CATEGORIE,blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updeated_at=models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -128,6 +136,7 @@ class Etiquette(models.Model):
 # PRODUIT
 # ================================
 class Produit(models.Model):
+
     TYPE_PRODUIT = [
         ('simple', 'Simple'),
         ('variable', 'Variable'),
@@ -399,6 +408,14 @@ class CommandeItem(models.Model):
 
     def __str__(self):
         return f"{self.quantite} x {self.produit.nom} (Commande {self.commande.numero})"
+
+class Favori(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE,related_name="favori_utilisateur")
+    produit=models.ForeignKey(Produit,on_delete=models.CASCADE,related_name="produit_favoriser")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 
 
 class Paiement(models.Model):

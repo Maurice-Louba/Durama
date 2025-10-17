@@ -6,7 +6,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from ..models import Addresse
 from ..serializer import AdresseSerialized
-
+from drf_yasg.utils import swagger_auto_schema
 
 #  Liste toutes les adresses de l'utilisateur connecté
 @api_view(['GET'])
@@ -18,6 +18,16 @@ def liste_adresses(request):
 
 
 # Créer une nouvelle adresse
+@swagger_auto_schema(
+    method='post',
+    request_body=AdresseSerialized,
+    reponses={
+        201: AdresseSerialized,
+        404:'Bad request'
+        
+        
+    }
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def creer_adresse(request):

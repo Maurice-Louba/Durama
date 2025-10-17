@@ -159,7 +159,7 @@ class AvisProduitSerialized(serializers.ModelSerializer):
     produit=ProduitSerialized(read_only=True)
     user=UserSerialized(read_only=True)
     class Meta:
-        models=AvisProduit
+        model=AvisProduit
         fields=['id','produit','user','texte','note','created_at','updated_at']
     def create(self, validated_data):
         user=self.context['request'].user
@@ -270,4 +270,14 @@ class AdresseSerialized(serializers.ModelSerializer):
     user=UserSerialized(read_only=True)
     class Meta:
         model=Addresse
-        fields=['id','user','adresse','ville','pays','telephone','latitude','longitude','location_url','is_default','created_at','updated_at']
+        fields=['id','user','address','ville','pays','telephone','latitude','longitude','location_url','is_default','created_at','updated_at']
+
+class FavoriSerialized(serializers.ModelSerializer):
+    user=UserSerialized(read_only=True)
+    produit=ProduitSerialized(read_only=True)
+    class Meta:
+        model=Favori
+        fields=['id','user','produit','created_at','updated_at']
+    def created(self,**validated_data):
+        user=self.context['request'].user
+        return Favori.objects.create(user=user,**validated_data)

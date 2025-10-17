@@ -57,3 +57,14 @@ def DetailCategorie(request,pk):
         return Response({'error':'categorie non trouvé'},status=status.HTTP_404_NOT_FOUND)
     categoriesSeria=CategorieSerialized(categories)
     return Response(categoriesSeria.data)
+
+#Liste des catégorie selon le type de gros categorie
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def toutCategories(request,groCategorie):
+    try:
+        grosCategorie=Categorie.objects.filter(gros_categorie=groCategorie)
+    except Categorie.DoesNotExist:
+        return Response({"message":"ces categories n'existent pas "},status=status.HTTP_404_NOT_FOUND)
+    grosCategorieserial=CategorieSerialized(grosCategorie,many=True)
+    return Response(grosCategorieserial.data)

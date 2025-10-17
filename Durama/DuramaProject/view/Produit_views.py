@@ -96,6 +96,18 @@ def produits_par_categorie(request, categorie_id):
     serializer = ProduitSerialized(produits, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+# produit par grosse categorie
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def produitpargroscategorie(request,gros_categorie):
+    try:
+        categorie=Categorie.objects.filter(gros_categorie=gros_categorie)
+    except Categorie.DoesNotExist:
+        return Response({"message":"categories non existantes"},status=status.HTTP_404_NOT_FOUND)
+    produit=Produit.objects.filter(categorie__in=categorie)
+    serializer=ProduitSerialized(produit,many=True)
+    return Response(serializer.data)
+
 
 # 7. Produits par sous-catégorie
 @api_view(['GET'])
@@ -123,3 +135,14 @@ def produits_par_etiquette(request, etiquette_id):
     produits = Produit.objects.filter(etiquette=etiquette).order_by("nom")
     serializer = ProduitSerialized(produits, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def QuatresPremiers(request,gros_categorie):
+    try:
+        categorie=Categorie.objects.filter(gros_categorie=gros_categorie)
+    except Categorie.DoesNotExist:
+        return Response({'message':"Categorie non trouvé"},status=status.HTTP_404_NOT_FOUND)
+    produit=Produit.objects.filter(categorie__in=categorie)[:5]
+    produitSerial=ProduitSerialized(produit,many=True)
+    return Response(produitSerial.data)
